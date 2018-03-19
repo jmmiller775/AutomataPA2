@@ -65,13 +65,21 @@ class DFA:
 		return self.in_accept_state();
 	pass;
 
-## Need to define/read in:
-	#states
-	#alphabet
-	#star_state
-	#accept state
+count = 0
+for line in iterinput:
+    if(count < num_transitions):
+        count+=1
+        #Splitting the transition
+        curState,symbol,nextState = line.split()
+        #Cleaning our strings
+        curState = curState.replace('\'', '')
+        symbol = symbol.replace('\'', '')
+        nextState = nextState.replace('\'', '')
 
-d = DFA(states, alphabet, tf, start_state, aceept_states);
+
+states = range(1, num_states);
+
+d = DFA(states, alphabet, tf, cur_state, next_state);
 inp_program = ('#needs to be a list of the inputs read in I assume');
 d.run_with_inputs(inp_program);
 
