@@ -92,6 +92,7 @@ def parseInput():
     next(iterinput)
 
     states = range(1, num_states)
+    num_transitions = len(alphabet)*num_states
     end_trans = False
     start_flag = False
     start_state = 0
@@ -120,7 +121,26 @@ def parseInput():
 
 
 
+def printDFA(dfa):
+    output = open(sys.argv[2], "w+")
+    output.write(dfa.numStates)
+    output.write(dfa.alphabet)
+    for i in range(0, len(dfa.states)):
+        for x in range(0, len(dfa.alphabet)):
+            s = dfa.states[i] + ' \'' + dfa.alphabet[x] + '\' ' + dfa.transition_function[dfa.states[i]][x] + "\n"
+            output.write(s)
+    #writing the start state
+    output.write(dfa.start_state+"\n")
+    #writing all of the accept states to a single line
+    for j in range(0, dfa.accept_states):
+        output.write(dfa.accept_states[j])
+    output.write("\n")
+
 
 d = DFA(states, alphabet, tf, cur_state, next_state)
+# I dont think we actually run anything for this project, just convert. He gives us the strings and the output
+# to verify that our conversion is happening correctly
+
 inp_program = ('#needs to be a list of the inputs read in I assume')
 d.run_with_inputs(inp_program)
+
