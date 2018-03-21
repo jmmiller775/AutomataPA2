@@ -6,17 +6,7 @@ Jack Miller: Jackmiller@sandiego.edu
 3-16-2018
 '''
 import sys
-'''
-#Our function that scans the input string and emulates the DFA symbol by symbol
-def runMachine(dfa, start, accept, string):
-    state = str(start)
-    for symbol in string:
-        try:
-            state = dfa[state][symbol]
-        except:
-            print("Could not find key: ", symbol, " in state: ", state)
-    return str(state)
-'''
+
 class DFA:
 	#Initialize function
     def __init__(self, states, alphabet, transition_function, start_state, accept_states):
@@ -28,6 +18,31 @@ class DFA:
         self.accept_states = accept_states
         return
 
+    def printDFA(dfa):
+        output = open(sys.argv[2], "w")
+        output.write(str(dfa.states))
+        output.write(str(dfa.alphabet))
+        for i in range(1, dfa.states):
+            for x in range(0, len(dfa.alphabet)):
+                #TODO
+                s = str(dfa.states[i]) + ' \'' + str(dfa.alphabet[x]) + '\' ' + str(dfa.transition_function[dfa.states[i]][x]) + "\n"
+                output.write(s)
+        #writing the start state
+        output.write(dfa.start_state+"\n")
+        #writing all of the accept states to a single line
+        for j in range(0, dfa.accept_states):
+            output.write(dfa.accept_states[j])
+        output.write("\n")
+
+    def runMachine(self, string):
+        state = str(self.start_state)
+        for symbol in string:
+            try:
+                state = self.transition_function([self.current_state, symbol])
+            except:
+                print("Could not find key: ", symbol, " in state: ", state)
+        return str(state)
+
 
 class NFA:
     def __init__(self, states, alphabet, transition_function, start_state, accept_states):
@@ -38,25 +53,112 @@ class NFA:
         self.current_state = start_state
         self.accept_states = accept_states
         return
+    def getnextState(self, i, x):
+        return self.transition_function[i][x]
+    def convertToDFA(self):
+        dfadict = {}
+        reject_flag = False
+        #numstates = len(self.states)*len(self.alphabet)
+        for i in range(1, self.states):
+            for x in self.alphabet:
+                temp = self.transition_function.get(str(i), {}).get(str(x), {})
+                if type(temp) is dict:
+                    reject_flag = True
+                    dfadict[i] = dfadict.get(i, {})
+                    dfadict[i][x] = "reject"
+                else:
+                    dfadict[i] = dfadict.get(i, {})
+                    #temp = self.transition_function[i][x]
+                    dfadict[i][x] = temp
 
-    #Transitions to state with input
+        if reject_flag:
+            states = self.states+1
+        else:
+            states = self.states
+        alphabet = self.alphabet
+        start_state = self.start_state
+        accept_states = self.accept_states
+        return DFA(states, alphabet, dfadict, start_state, accept_states)
+
+
+#Transitions to state with input
+def parseInput():
+    # Declaring our dfa representation
+    dfa_dic = {}
+    nfa_dic = {}
+    # Opening the input
+    input = tuple(open(sys.argv[1], "r"))
+    # Pulling the number of states
+    num_states = int(input[0])
+    # Pulling and cleaning our alphabet
+    alphabet = input[1].strip()
+    # Getting the number of transitions in our DFA
+    # num_transitions = num_states*len(alphabet)
+    # Creating an iterable so we can skip the first two lines
+    iterinput = iter(input)
+    next(iterinput)
+    next(iterinput)
+
+    states = range(1, num_states)
+    num_transitions = len(alphabet) * num_states
+    end_trans = False
+    start_flag = False
+    start_state = 0
+    accept_states = 0
+    for line in iterinput:
+        if not line.strip():
+            end_trans = True
+        if not end_trans and not start_flag:
+            curState, symbol, nextState = line.split()
+            curState = curState.replace('\'', '')
+            symbol = symbol.replace('\'', '')
+            #nextState = nextState('\'', '')
+            nfa_dic[curState] = nfa_dic.get(curState, {})
+            nfa_dic[curState][symbol] = nextState
+
+        elif end_trans and not start_flag:
+            start_flag = True
+            start_state = line.split()
+            #start_state = start_state.replace('\'', '')
+        elif end_trans and start_flag:
+            accept_states = line.split()
+            #accept_states = accept_states.replace('\'', '')
+    return NFA(num_states, alphabet, nfa_dic, start_state, accept_states)
+
+
+def main():
+    if sys.argv is None:
+        print("Usage: \n$> python pa2.py <input> <output> ")
+    else:
+        a = parseInput()
+        print("NFAdict: \n", a.transition_function)
+        b = a.convertToDFA()
+        print("DFAdict: \n", b.transition_function)
+        b.printDFA()
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
 '''
+TO BE USED maybe:
+
+#Our function that scans the input string and emulates the DFA symbol by symbol
+def runMachine(dfa, start, accept, string):
+    state = str(start)
+    for symbol in string:
+        try:
+            state = dfa[state][symbol]
+        except:
+            print("Could not find key: ", symbol, " in state: ", state)
+    return str(state)
 	def transition_to_state_with_input(self, input_value):
 		if ((self.current_state, input_value) not in self.transition_function.keys()):
 			self.current_state = None
 			return
 		self.current_state = self.transition_function[(self.current_state, input_value)]
 		return
-'''
-
-def runMachine(self, string):
-    state = str(self.start_state)
-    for symbol in string:
-        try:
-            state = self.transition_function([self.current_state, symbol])
-        except:
-            print("Could not find key: ", symbol, " in state: ", state)
-    return str(state)
 
 #Determines whether or not in accept state
 def in_accept_state(self):
@@ -73,74 +175,7 @@ def run_with_input_list(self):
         continue
     return self.in_accept_state()
 
-
-def parseInput():
-    #Declaring our dfa representation
-    dfa_dic = {}
-    nfa_dic = {}
-    #Opening the input
-    input = tuple(open(sys.argv[1], "r"))
-    #Pulling the number of states
-    num_states = int(input[0])
-    #Pulling and cleaning our alphabet
-    alphabet = input[1].strip()
-    #Getting the number of transitions in our DFA
-    #num_transitions = num_states*len(alphabet)
-    #Creating an iterable so we can skip the first two lines
-    iterinput = iter(input)
-    next(iterinput)
-    next(iterinput)
-
-    states = range(1, num_states)
-    num_transitions = len(alphabet)*num_states
-    end_trans = False
-    start_flag = False
-    start_state = 0
-    accept_states = 0
-    for line in iterinput:
-        if not line.strip():
-            end_trans = True
-        if not end_Trans and not start_flag and not accept_flag:
-            curState, symbol, nextState = line.split()
-            curState = curState.replace('\'', '')
-            symbol = symbol.replace('\'', '')
-            nextState = nextState('\'', '')
-            nfa_dic[curState] = nfa_dic.get(curState, {})
-            nfa_dic[curState][symbol] = nextState
-
-        elif  end_trans and not start_flag:
-            start_flag = True
-            start_state = line.split()
-            start_state = start_state.replace('\'', '')
-        elif end_trans and start_flag:
-            accept_states = line.split()
-            accept_states = accept_states.replace('\'', '')
-    return NFA(states, alphabet, nfa_dic, start_state, accept_states)
-
-
-
-
-
-def printDFA(dfa):
-    output = open(sys.argv[2], "w+")
-    output.write(dfa.numStates)
-    output.write(dfa.alphabet)
-    for i in range(0, len(dfa.states)):
-        for x in range(0, len(dfa.alphabet)):
-            s = dfa.states[i] + ' \'' + dfa.alphabet[x] + '\' ' + dfa.transition_function[dfa.states[i]][x] + "\n"
-            output.write(s)
-    #writing the start state
-    output.write(dfa.start_state+"\n")
-    #writing all of the accept states to a single line
-    for j in range(0, dfa.accept_states):
-        output.write(dfa.accept_states[j])
-    output.write("\n")
-
-
 d = DFA(states, alphabet, tf, cur_state, next_state)
-# I dont think we actually run anything for this project, just convert. He gives us the strings and the output
-# to verify that our conversion is happening correctly
-
 inp_program = ('#needs to be a list of the inputs read in I assume')
 d.run_with_inputs(inp_program)
-
+'''
