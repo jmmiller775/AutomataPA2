@@ -113,6 +113,11 @@ def parseInput():
             curState = curState.replace('\'', '')
             symbol = symbol.replace('\'', '')
             #nextState = nextState('\'', '')
+			if nfa_dic[curState][symbol] is not None:
+				 = nfa_dic.get(curState, {}).get(symbol, {})
+				if temp is List:
+					nfa_dic[curState
+
             nfa_dic[curState] = nfa_dic.get(curState, {})
             nfa_dic[curState][symbol] = nextState
 
@@ -175,7 +180,3 @@ def run_with_input_list(self):
         continue
     return self.in_accept_state()
 
-d = DFA(states, alphabet, tf, cur_state, next_state)
-inp_program = ('#needs to be a list of the inputs read in I assume')
-d.run_with_inputs(inp_program)
-'''
