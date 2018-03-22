@@ -32,17 +32,15 @@ class DFA:
                 # print(s)
                 # s = str(dfa.states[i]) + ' \'' + str(dfa.alphabet[x]) + '\' ' + str(dfa.transition_function[dfa.states[i]][x]) + "\n
                 output.write(s)
-    # writing the start state
 
-    for l in range(0, len(self.start_state)):
-        output.write(str(self.start_state[l]))
-    output.write("\n")
-    # output.write(str(self.start_state)+"\n")
-    # writing all of the accept states to a single line
-    # for j in self.accept_states:
-    for j in range(0, len(self.accept_states)):
-        output.write(self.accept_states[j])
-    output.write("\n")
+		output.write(self.start_state)
+		output.write("\n")
+		# output.write(str(self.start_state)+"\n")
+		# writing all of the accept states to a single line
+		# for j in self.accept_states:
+		for j in range(0, len(self.accept_states)):
+			output.write(self.accept_states[j])
+		output.write("\n")
 
 
 def runMachine(self, string):
