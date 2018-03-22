@@ -18,30 +18,41 @@ class DFA:
         self.accept_states = accept_states
         return
 
-    def printDFA(dfa):
+    def printDFA(self):
         output = open(sys.argv[2], "w")
-        output.write(str(dfa.states))
-        output.write(str(dfa.alphabet))
-        for i in range(1, dfa.states):
-            for x in range(0, len(dfa.alphabet)):
-                #TODO
-                s = str(dfa.states[i]) + ' \'' + str(dfa.alphabet[x]) + '\' ' + str(dfa.transition_function[dfa.states[i]][x]) + "\n"
+        output.write(str(self.states) + "\n")
+        output.write(str(self.alphabet) + "\n")
+        for i in range(1, self.states):
+            for x in range(0, len(self.alphabet)):
+                # TODO
+                curState = self.states
+                symbol = self.alphabet[x]
+                nextState = self.transition_function.get(str(i), {}).get(str(x), {})
+                s = str(curState) + " \'" + str(symbol) + "\' " + str(nextState) + "\n"
+                # print(s)
+                # s = str(dfa.states[i]) + ' \'' + str(dfa.alphabet[x]) + '\' ' + str(dfa.transition_function[dfa.states[i]][x]) + "\n
                 output.write(s)
-        #writing the start state
-        output.write(dfa.start_state+"\n")
-        #writing all of the accept states to a single line
-        for j in range(0, dfa.accept_states):
-            output.write(dfa.accept_states[j])
-        output.write("\n")
+    # writing the start state
 
-    def runMachine(self, string):
-        state = str(self.start_state)
-        for symbol in string:
-            try:
-                state = self.transition_function([self.current_state, symbol])
-            except:
-                print("Could not find key: ", symbol, " in state: ", state)
-        return str(state)
+    for l in range(0, len(self.start_state)):
+        output.write(str(self.start_state[l]))
+    output.write("\n")
+    # output.write(str(self.start_state)+"\n")
+    # writing all of the accept states to a single line
+    # for j in self.accept_states:
+    for j in range(0, len(self.accept_states)):
+        output.write(self.accept_states[j])
+    output.write("\n")
+
+
+def runMachine(self, string):
+    state = str(self.start_state)
+    for symbol in string:
+        try:
+            state = self.transition_function([self.current_state, symbol])
+        except:
+            print("Could not find key: ", symbol, " in state: ", state)
+    return str(state)
 
 
 class NFA:
@@ -53,12 +64,14 @@ class NFA:
         self.current_state = start_state
         self.accept_states = accept_states
         return
+
     def getnextState(self, i, x):
         return self.transition_function[i][x]
+
     def convertToDFA(self):
         dfadict = {}
         reject_flag = False
-        #numstates = len(self.states)*len(self.alphabet)
+        # numstates = len(self.states)*len(self.alphabet)
         for i in range(1, self.states):
             for x in self.alphabet:
                 temp = self.transition_function.get(str(i), {}).get(str(x), {})
@@ -68,17 +81,18 @@ class NFA:
                     dfadict[i][x] = "reject"
                 else:
                     dfadict[i] = dfadict.get(i, {})
-                    #temp = self.transition_function[i][x]
+                    # temp = self.transition_function[i][x]
                     dfadict[i][x] = temp
 
         if reject_flag:
-            states = self.states+1
+            states = self.states + 1
         else:
             states = self.states
         alphabet = self.alphabet
         start_state = self.start_state
         accept_states = self.accept_states
         return DFA(states, alphabet, dfadict, start_state, accept_states)
+
 
 
 #Transitions to state with input
@@ -113,12 +127,14 @@ def parseInput():
             curState = curState.replace('\'', '')
             symbol = symbol.replace('\'', '')
             #nextState = nextState('\'', '')
+
             nfa_dic[curState] = nfa_dic.get(curState, {})
             nfa_dic[curState][symbol] = nextState
 
         elif end_trans and not start_flag:
             start_flag = True
-            start_state = line.split()
+            start_state = line
+            print("START STATE IN parse: type = ", str(type(start_state)), "contents = ", start_state)
             #start_state = start_state.replace('\'', '')
         elif end_trans and start_flag:
             accept_states = line.split()
@@ -139,6 +155,7 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
 
 
 '''
