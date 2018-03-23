@@ -50,17 +50,13 @@ class DFA:
         # writing all of the accept states to a single line
         # for j in self.accept_states:
         for j in range(0, len(self.accept_states)):
+            output.write(str(self.accept_states[j]))
+        output.write("\n")
+        output.write(str(self.start_state))
+        output.write("\n")
+        for j in range(0, len(self.accept_states)):
             output.write(self.accept_states[j])
         output.write("\n")
-
-		output.write(self.start_state)
-		output.write("\n")
-		# output.write(str(self.start_state)+"\n")
-		# writing all of the accept states to a single line
-		# for j in self.accept_states:
-		for j in range(0, len(self.accept_states)):
-			output.write(self.accept_states[j])
-		output.write("\n")
 
 
 def runMachine(self, string):
@@ -154,7 +150,7 @@ class NFA:
         alphabet = self.alphabet
         alphabet = alphabet.replace("e", '')
         rejectFlag = False
-        print(alphabet)
+        #print(alphabet)
         start_state = self.getEpsClosure(self.start_state)
         for j in states:
             for x in j:
@@ -251,11 +247,12 @@ def parseInput():
                     temp_list.append(nextState)
                     nfa_dic[curState][symbol] = temp_list
             #nextState = nextState('\'', '')
-			if nfa_dic[curState][symbol] is not None:
-                temp  = nfa_dic.get(curState, {}).get(symbol, {})
-				if temp is List:
-					nfa_dic[curState
-
+                '''
+                if nfa_dic[curState][symbol] is not None:
+                    temp  = nfa_dic.get(curState, {}).get(symbol, {})
+                    if temp is List:
+                        nfa_dic[curState].append(j)
+                '''
             else:
                 nfa_dic[curState] = nfa_dic.get(curState, {})
                 nfa_dic[curState][symbol] = nextState
