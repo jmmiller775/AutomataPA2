@@ -21,13 +21,9 @@ class DFA:
 
     def printDFA(self):
         output = open(sys.argv[2], "w")
-        '''
-        if "reject" in self.states:
-            self.num_states +=1
-        '''
         output.write(str(self.num_states) + "\n")
         output.write(str(self.alphabet) + "\n")
-        for i in range(1, self.num_states):
+        for i in range(0, self.num_states):
             for x in range(0, len(self.alphabet)):
                 # TODO
 
@@ -44,18 +40,13 @@ class DFA:
                 output.write(s)
         # writing the start state
         #output.write(int(self.start_state))
-        output.write(str(self.start_state))
-        output.write("\n")
         # output.write(str(self.start_state)+"\n")
         # writing all of the accept states to a single line
         # for j in self.accept_states:
-        for j in range(0, len(self.accept_states)):
-            output.write(str(self.accept_states[j]))
-        output.write("\n")
         output.write(str(self.start_state))
         output.write("\n")
         for j in range(0, len(self.accept_states)):
-            output.write(self.accept_states[j])
+            output.write(str(self.accept_states[j]))
         output.write("\n")
 
 
@@ -156,33 +147,33 @@ class NFA:
             for x in j:
                 for y in alphabet:
                     try:
-                        print("got")
+                        #print("got")
                         next_state = self.getEpsClosure(self.transition_function[str(x)][str(y)])
-                        print("here")
+                        #print("here")
                         if next_state not in states:
-                            print("on this")
+                            #print("on this")
                             #states.append(next_state)
-                            print("line")
+                            #print("line")
                             dfadict[str(j)] = dfadict.get(str(j), {})
                             dfadict[str(j)][str(y)] = next_state
-                            print("and")
+                            #print("and")
                         else:
-                            print("this")
+                            #print("this")
                             cur = dfadict.get(str(j), {}).get(str(y), [])
-                            print("one")
+                            #print("one")
                             if cur != next_state:
-                                print("oor")
+                                #print("oor")
                                 cur.append(next_state)
-                                print("thhhis")
+                                #print("thhhis")
                                 dfadict[str(j)][str(y)] = cur
-                                print("onne")
+                                #print("onne")
                     except KeyError:
                         dfadict[str(j)] = dfadict.get(str(j), {})
                         dfadict[str(j)][str(y)] = dfadict.get(str(j), {}).get(str(y), [])
                         if not dfadict[str(j)][str(y)]:
                             dfadict[str(j)][str(y)].append("reject")
                         rejectFlag = True
-                        print("failed")
+                        #print("failed")
 
         if rejectFlag:
             states.append("reject")
