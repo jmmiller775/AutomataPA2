@@ -5,8 +5,6 @@ Matthew Roth: Mroth@sandiego.edu
 Jack Miller: Jackmiller@sandiego.edu
 3-16-2018
 '''
-from functools import reduce
-import operator
 import sys
 
 class DFA:
@@ -54,6 +52,15 @@ class DFA:
         for j in range(0, len(self.accept_states)):
             output.write(self.accept_states[j])
         output.write("\n")
+
+		output.write(self.start_state)
+		output.write("\n")
+		# output.write(str(self.start_state)+"\n")
+		# writing all of the accept states to a single line
+		# for j in self.accept_states:
+		for j in range(0, len(self.accept_states)):
+			output.write(self.accept_states[j])
+		output.write("\n")
 
 
 def runMachine(self, string):
@@ -243,6 +250,11 @@ def parseInput():
                     temp_list.append(lis_check)
                     temp_list.append(nextState)
                     nfa_dic[curState][symbol] = temp_list
+            #nextState = nextState('\'', '')
+			if nfa_dic[curState][symbol] is not None:
+                temp  = nfa_dic.get(curState, {}).get(symbol, {})
+				if temp is List:
+					nfa_dic[curState
 
             else:
                 nfa_dic[curState] = nfa_dic.get(curState, {})
@@ -257,13 +269,6 @@ def parseInput():
         elif end_trans and start_flag:
             accept_states = line.split()
             #accept_states = accept_states.replace('\'', '')
-    '''
-    print("numStates: ", num_states)
-    print("states: ", states)
-    print("alphabet", alphabet)
-    print("start state: ", stat_state)
-    print("accept_states: ", accept_states)
-    '''
     return NFA(num_states, states, alphabet, nfa_dic, stat_state, accept_states)
 
 
@@ -318,8 +323,4 @@ def run_with_input_list(self):
         self.transition_to_state_with_input(inp)
         continue
     return self.in_accept_state()
-
-d = DFA(states, alphabet, tf, cur_state, next_state)
-inp_program = ('#needs to be a list of the inputs read in I assume')
-d.run_with_inputs(inp_program)
 '''
