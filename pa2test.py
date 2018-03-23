@@ -5,12 +5,15 @@ Matthew Roth: Mroth@sandiego.edu
 Jack Miller: Jackmiller@sandiego.edu
 3-16-2018
 '''
+from functools import reduce
+import operator
 import sys
 
 class DFA:
 	#Initialize function
-    def __init__(self, states, alphabet, transition_function, start_state, accept_states):
+    def __init__(self, num_states, states,alphabet, transition_function, start_state, accept_states):
         self.states = states
+        self.num_states = num_states
         self.alphabet = alphabet
         self.transition_function = transition_function
         self.current_state = start_state
@@ -20,29 +23,37 @@ class DFA:
 
     def printDFA(self):
         output = open(sys.argv[2], "w")
-        output.write(str(self.states) + "\n")
+        '''
+        if "reject" in self.states:
+            self.num_states +=1
+        '''
+        output.write(str(self.num_states) + "\n")
         output.write(str(self.alphabet) + "\n")
-        for i in range(1, self.states):
+        for i in range(1, self.num_states):
             for x in range(0, len(self.alphabet)):
                 # TODO
-                curState = self.states
+
+                curState = self.states[i]
                 symbol = self.alphabet[x]
-                nextState = self.transition_function.get(str(i), {}).get(str(x), {})
+                if curState is "reject":
+                    nextState = "reject"
+                else:
+                    nextState = self.transition_function[str(curState)][self.alphabet[x]]
+                #nextState = self.transition_function.get(str(i), {}).get(str(x), {})
                 s = str(curState) + " \'" + str(symbol) + "\' " + str(nextState) + "\n"
                 # print(s)
                 # s = str(dfa.states[i]) + ' \'' + str(dfa.alphabet[x]) + '\' ' + str(dfa.transition_function[dfa.states[i]][x]) + "\n
                 output.write(s)
-    # writing the start state
-
-    for l in range(0, len(self.start_state)):
-        output.write(str(self.start_state[l]))
-    output.write("\n")
-    # output.write(str(self.start_state)+"\n")
-    # writing all of the accept states to a single line
-    # for j in self.accept_states:
-    for j in range(0, len(self.accept_states)):
-        output.write(self.accept_states[j])
-    output.write("\n")
+        # writing the start state
+        #output.write(int(self.start_state))
+        output.write(str(self.start_state))
+        output.write("\n")
+        # output.write(str(self.start_state)+"\n")
+        # writing all of the accept states to a single line
+        # for j in self.accept_states:
+        for j in range(0, len(self.accept_states)):
+            output.write(self.accept_states[j])
+        output.write("\n")
 
 
 def runMachine(self, string):
@@ -56,7 +67,8 @@ def runMachine(self, string):
 
 
 class NFA:
-    def __init__(self, states, alphabet, transition_function, start_state, accept_states):
+    def __init__(self, num_states, states, alphabet, transition_function, start_state, accept_states):
+        self.num_states = num_states
         self.states = states
         self.alphabet = alphabet
         self.transition_function = transition_function
@@ -68,30 +80,119 @@ class NFA:
     def getnextState(self, i, x):
         return self.transition_function[i][x]
 
-    def convertToDFA(self):
+    def onvertToDFA(self):
         dfadict = {}
         reject_flag = False
         # numstates = len(self.states)*len(self.alphabet)
-        for i in range(1, self.states):
+        for i in self.states:
             for x in self.alphabet:
                 temp = self.transition_function.get(str(i), {}).get(str(x), {})
+
                 if type(temp) is dict:
                     reject_flag = True
                     dfadict[i] = dfadict.get(i, {})
                     dfadict[i][x] = "reject"
                 else:
                     dfadict[i] = dfadict.get(i, {})
-                    # temp = self.transition_function[i][x]
+                    #temp = self.transition_function[i][x]
                     dfadict[i][x] = temp
 
+        states = self.states
+        num_states = self.num_states
         if reject_flag:
-            states = self.states + 1
-        else:
-            states = self.states
+            states.append("reject")
+            num_states+=1
         alphabet = self.alphabet
         start_state = self.start_state
+        try:
+            eps_check = dfadict[start_state]['e']
+            if eps_check is list:
+                start_list = []
+                #for x in eps_check:
+
+                start_state = eps_check
+        except KeyError:
+            print("failed")
+            pass
         accept_states = self.accept_states
-        return DFA(states, alphabet, dfadict, start_state, accept_states)
+        return DFA(num_states,states, alphabet, dfadict, start_state, accept_states)
+
+    def getEpsClosure(self, state):
+        temp_state = state
+        ret = []
+        ret.append(str(temp_state))
+        for x in self.transition_function:
+            for y in self.transition_function[x]:
+                if x == str(temp_state):
+                    if "e" in y:
+                        temp_state = self.transition_function[x][y]
+                        ret.append(temp_state)
+        return ret
+
+    def getReachable(self, state):
+        temp_state = str(state)
+        alphabet = self.alphabet
+        reachable = []
+        for x in self.transition_function[temp_state]:
+                if x in alphabet:
+                    next = self.transition_function[temp_state][x]
+                    reachable.append(next)
+        return reachable
+
+    def convertToDFA(self):
+        states = []
+        for l in self.states:
+            states.append(self.getEpsClosure(l))
+        dfadict = {}
+        alphabet = self.alphabet
+        alphabet = alphabet.replace("e", '')
+        rejectFlag = False
+        print(alphabet)
+        start_state = self.getEpsClosure(self.start_state)
+        for j in states:
+            for x in j:
+                for y in alphabet:
+                    try:
+                        print("got")
+                        next_state = self.getEpsClosure(self.transition_function[str(x)][str(y)])
+                        print("here")
+                        if next_state not in states:
+                            print("on this")
+                            #states.append(next_state)
+                            print("line")
+                            dfadict[str(j)] = dfadict.get(str(j), {})
+                            dfadict[str(j)][str(y)] = next_state
+                            print("and")
+                        else:
+                            print("this")
+                            cur = dfadict.get(str(j), {}).get(str(y), [])
+                            print("one")
+                            if cur != next_state:
+                                print("oor")
+                                cur.append(next_state)
+                                print("thhhis")
+                                dfadict[str(j)][str(y)] = cur
+                                print("onne")
+                    except KeyError:
+                        dfadict[str(j)] = dfadict.get(str(j), {})
+                        dfadict[str(j)][str(y)] = dfadict.get(str(j), {}).get(str(y), [])
+                        if not dfadict[str(j)][str(y)]:
+                            dfadict[str(j)][str(y)].append("reject")
+                        rejectFlag = True
+                        print("failed")
+
+        if rejectFlag:
+            states.append("reject")
+        return DFA(len(states), states, alphabet, dfadict, start_state ,self.accept_states)
+        #print("STATES:")
+        #print(states)
+        #print("trans dict")
+        #print(dfadict)
+
+
+
+
+
 
 
 
@@ -112,34 +213,59 @@ def parseInput():
     iterinput = iter(input)
     next(iterinput)
     next(iterinput)
-
-    states = range(1, num_states)
-    num_transitions = len(alphabet) * num_states
+    states = []
+    for x in range(0, num_states):
+        states.append(x+1)
     end_trans = False
     start_flag = False
+    epsi_flag = False
     start_state = 0
     accept_states = 0
     for line in iterinput:
         if not line.strip():
             end_trans = True
-        if not end_trans and not start_flag:
+        elif not end_trans and not start_flag:
             curState, symbol, nextState = line.split()
             curState = curState.replace('\'', '')
             symbol = symbol.replace('\'', '')
-            #nextState = nextState('\'', '')
+            nextState = nextState.replace('\'', '')
+            if symbol in 'e' and not epsi_flag:
+                epsi_flag = True
+                alphabet = alphabet + "e"
 
-            nfa_dic[curState] = nfa_dic.get(curState, {})
-            nfa_dic[curState][symbol] = nextState
+            lis_check = nfa_dic.get(curState, {}).get(symbol)
+            if lis_check is not None:
+                if lis_check is list:
+                    lis_check.append(nextState)
+                    nfa_dic[curState][symbol] = lis_check
+                else:
+                    temp_list = []
+                    temp_list.append(lis_check)
+                    temp_list.append(nextState)
+                    nfa_dic[curState][symbol] = temp_list
+
+            else:
+                nfa_dic[curState] = nfa_dic.get(curState, {})
+                nfa_dic[curState][symbol] = nextState
 
         elif end_trans and not start_flag:
             start_flag = True
             start_state = line
-            print("START STATE IN parse: type = ", str(type(start_state)), "contents = ", start_state)
+            start_state = start_state.replace('\n', '')
+            stat_state = int(start_state)
             #start_state = start_state.replace('\'', '')
         elif end_trans and start_flag:
             accept_states = line.split()
             #accept_states = accept_states.replace('\'', '')
-    return NFA(num_states, alphabet, nfa_dic, start_state, accept_states)
+    '''
+    print("numStates: ", num_states)
+    print("states: ", states)
+    print("alphabet", alphabet)
+    print("start state: ", stat_state)
+    print("accept_states: ", accept_states)
+    '''
+    return NFA(num_states, states, alphabet, nfa_dic, stat_state, accept_states)
+
 
 
 def main():
@@ -151,6 +277,7 @@ def main():
         b = a.convertToDFA()
         print("DFAdict: \n", b.transition_function)
         b.printDFA()
+
 
 
 if __name__ == "__main__":
