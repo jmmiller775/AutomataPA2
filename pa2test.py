@@ -6,6 +6,7 @@ Jack Miller: Jackmiller@sandiego.edu
 3-16-2018
 '''
 import sys
+import re
 
 class DFA:
 	#Initialize function
@@ -19,35 +20,82 @@ class DFA:
         self.accept_states = accept_states
         return
 
-    def printDFA(self):
+    def oldprintDFA(self):
         output = open(sys.argv[2], "w")
         output.write(str(self.num_states) + "\n")
         output.write(str(self.alphabet) + "\n")
         for i in range(0, self.num_states):
             for x in range(0, len(self.alphabet)):
-                # TODO
 
                 curState = self.states[i]
                 symbol = self.alphabet[x]
                 if curState is "reject":
                     nextState = "reject"
                 else:
-                    nextState = self.transition_function[str(curState)][self.alphabet[x]]
-                #nextState = self.transition_function.get(str(i), {}).get(str(x), {})
+                    nextState = self.transition_function[str(curState)][symbol]
                 s = str(curState) + " \'" + str(symbol) + "\' " + str(nextState) + "\n"
-                # print(s)
-                # s = str(dfa.states[i]) + ' \'' + str(dfa.alphabet[x]) + '\' ' + str(dfa.transition_function[dfa.states[i]][x]) + "\n
                 output.write(s)
-        # writing the start state
-        #output.write(int(self.start_state))
-        # output.write(str(self.start_state)+"\n")
-        # writing all of the accept states to a single line
-        # for j in self.accept_states:
         output.write(str(self.start_state))
         output.write("\n")
         for j in range(0, len(self.accept_states)):
-            output.write(str(self.accept_states[j]))
+            timp = self.accept_states[j]
+            output.write(str(timp) + " ")
         output.write("\n")
+
+    def printDFA(self):
+        self.usedStates()
+        self.simplifyStates()
+        output = open(sys.argv[2], "w")
+        output.write(str(self.num_states) + "\n")
+        output.write(str(self.alphabet) + "\n")
+        for i in range(0, self.num_states):
+            for x in range(0, len(self.alphabet)):
+                curState = self.states[i]
+                symbol = self.alphabet[x]
+                nextState = self.transition_function[curState][symbol]
+                s = str(curState) + " \'" + str(symbol) + "\' " + str(nextState) + "\n"
+                output.write(s)
+        output.write(str(self.start_state))
+        output.write("\n")
+        for j in range(0, len(self.accept_states)):
+            timp = self.accept_states[j]
+            output.write(str(timp) + " ")
+        output.write("\n")
+
+    def usedStates(self):
+        print(self.start_state)
+        print(type(self.start_state))
+    def simplifyStates(self):
+        simplestates = {}
+        newtrans = {}
+        for x in range(0, self.num_states):
+            tempstate = str(self.states[x])
+            simplestates[tempstate] = x
+        for i in range(0, self.num_states):
+            curState = self.states[i]
+            curdstate = simplestates.get(str(curState))
+            newtrans[curdstate] = {}
+            for x in range(0, len(self.alphabet)):
+                symbol = self.alphabet[x]
+                if curState is "reject":
+                    nextState = simplestates.get("reject")
+                else:
+                    nextState = self.transition_function[str(curState)][symbol]
+                    noxtState = simplestates.get(str(nextState))
+                    if noxtState is None:
+                        noxtState = simplestates.get("reject")
+                newtrans[curdstate][symbol] = noxtState
+        self.transition_function = newtrans
+        self.states = list(simplestates.values())
+        self.start_state = self.start_state
+        newaccp = []
+        for x in self.accept_states:
+            newaccp.append(simplestates.get(str(x)))
+        self.accept_states = newaccp
+        print("ACCept")
+        print(self.accept_states)
+        print("start")
+        print(self.start_state)
 
 
 def runMachine(self, string):
@@ -120,7 +168,8 @@ class NFA:
                 if x == str(temp_state):
                     if "e" in y:
                         temp_state = self.transition_function[x][y]
-                        ret.append(temp_state)
+                        #changed to STR TODO
+                        ret.append(str(temp_state))
         return ret
 
     def getReachable(self, state):
@@ -142,13 +191,16 @@ class NFA:
         alphabet = alphabet.replace("e", '')
         rejectFlag = False
         #print(alphabet)
-        start_state = self.getEpsClosure(self.start_state)
+        #TODO changed to str
+        start_state = str(self.getEpsClosure(self.start_state))
+        start_state = re.sub(r'\W+', '', start_state)
         for j in states:
             for x in j:
                 for y in alphabet:
                     try:
                         #print("got")
-                        next_state = self.getEpsClosure(self.transition_function[str(x)][str(y)])
+                        #changed str TODO
+                        next_state = str(self.getEpsClosure(self.transition_function[str(x)][str(y)]))
                         #print("here")
                         if next_state not in states:
                             #print("on this")
@@ -177,7 +229,12 @@ class NFA:
 
         if rejectFlag:
             states.append("reject")
-        return DFA(len(states), states, alphabet, dfadict, start_state ,self.accept_states)
+        accept_states = []
+        for x in range(len(self.accept_states)):
+            #TODO changed str
+            state = str(self.getEpsClosure(self.accept_states[x]))
+            accept_states.append(state)
+        return DFA(len(states), states, alphabet, dfadict, start_state ,accept_states)
         #print("STATES:")
         #print(states)
         #print("trans dict")
